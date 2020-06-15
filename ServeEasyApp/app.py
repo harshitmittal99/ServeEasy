@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, session
+from flask import Flask, render_template, request, redirect, url_for, session,jsonify
 from flask_mysqldb import MySQL
 from spellchecker import SpellChecker
 import MySQLdb
@@ -22,11 +22,11 @@ app = Flask(__name__)
 local_dir = os.getcwd()
 print(local_dir)
 
-db = yaml.load(open('db.yaml'))
-app.config['MYSQL_HOST'] = db['mysql_host']
-app.config['MYSQL_USER'] = db['mysql_user']
-app.config['MYSQL_PASSWORD'] = db['mysql_password']
-app.config['MYSQL_DB'] = db['mysql_db']
+#db = yaml.load(open('db.yaml'))
+app.config['MYSQL_HOST'] = "localhost"
+app.config['MYSQL_USER'] = "Harshit"
+app.config['MYSQL_PASSWORD'] = "Harshit"
+app.config['MYSQL_DB'] = "serve"
 mysql = MySQL(app)
 
 
