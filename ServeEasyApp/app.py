@@ -39,6 +39,22 @@ def home():
         return redirect(url_for('user_home'))
     return render_template('home.html', user_details=())
 
+def ifUsernameNotAvailable(username):
+    cursor = mysql.connection.cursor()
+    query = "select username from user where username = %s"
+    cursor.execute(query,[username])
+    result = cursor.fetchall()
+    return result
+
+@app.route('/username',methods=["POST"])
+def username():
+    if request.method == "POST":
+        username = request.form['username']
+        if ifUsernameNotAvailable(username):
+            return jsonify(result="username not available")
+        return jsonify(result="username available")
+
+
 
 @app.route('/logout')
 def logout():
