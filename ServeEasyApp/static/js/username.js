@@ -1,6 +1,7 @@
 $(document).ready(function() {
     $('#signupform input[name=username]').on('input', function(event) {
 
+
         $.ajax({
             data: {
                 username: $('#signupform input[name=username]').val()
@@ -11,5 +12,7 @@ $(document).ready(function() {
                 $('#availability').text(data.result);
             }
         });
+        event.preventDefault();
     });
+
 });

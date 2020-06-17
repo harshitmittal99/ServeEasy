@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, session,jsonify
+from flask import Flask, render_template, request, redirect, url_for,flash, session,jsonify
 from flask_mysqldb import MySQL
 from spellchecker import SpellChecker
 import MySQLdb
@@ -8,6 +8,7 @@ import sys
 import yaml
 import random
 import string
+from form_validation import SignupForm
 
 spell = SpellChecker()
 
@@ -26,12 +27,31 @@ print(local_dir)
 app.config['MYSQL_HOST'] = "localhost"
 app.config['MYSQL_USER'] = "Harshit"
 app.config['MYSQL_PASSWORD'] = "Harshit"
-app.config['MYSQL_DB'] = "serve"
+app.config['MYSQL_DB'] = "ServeEasy"
 mysql = MySQL(app)
 
 
 user_details = ()
+def ifUsernameNotAvailable(user_id):
+    cursor = mysql.connection.cursor()
+    query = "select user_id from user where user_id = %s"
+    cursor.execute(query,[user_id])
+    result = cursor.fetchall()
+    return result
 
+def ifEmailOccupied(email):
+    cursor = mysql.connection.cursor()
+    query = "select email from user where email = %s"
+    cursor.execute(query,[email])
+    result = cursor.fetchall()
+    return result
+
+def ifphoneOccupied(phone):
+    cursor = mysql.connection.cursor()
+    query = "select phone from user where phone = %s"
+    cursor.execute(query,[phone])
+    result = cursor.fetchall()
+    return result
 
 @app.route('/home')
 def home():
@@ -39,12 +59,7 @@ def home():
         return redirect(url_for('user_home'))
     return render_template('home.html', user_details=())
 
-def ifUsernameNotAvailable(username):
-    cursor = mysql.connection.cursor()
-    query = "select username from user where username = %s"
-    cursor.execute(query,[username])
-    result = cursor.fetchall()
-    return result
+
 
 @app.route('/username',methods=["POST"])
 def username():
@@ -101,24 +116,28 @@ def about():
 
 @app.route('/sign_up', methods=['POST', 'GET'])
 def sign_up():
+    form = SignupForm()
     if(request.method == 'POST'):
-        user_details = request.form
-        name = user_details['name']
-        user_id = user_details['username']
-        email = user_details['email']
-        password = user_details['password']
-        phone = user_details['phone']
-        cur = mysql.connection.cursor()
-        cur.execute("SELECT EXISTS(SELECT * from user WHERE user_Id=%s);",[user_id])
-        check = cur.fetchall();
-        if(check[0][0]==1):
-            return "try different user this user already exist"
-        cur.execute("insert into user value(%s,%s,%s,%s,%s,%s,%s)",
-                    (name, user_id,  email, phone, password, '', ''))
-        mysql.connection.commit()
-        cur.close()
-        return redirect('/home')
-    return render_template('sign_up.html')
+        if form.validate_on_submit():
+            user_details = request.form
+            name = user_details['name']
+            user_id = user_details['username']
+            email = user_details['email']
+            password = user_details['password']
+            phone = user_details['phone']
+            if(ifUsernameNotAvailable(user_id)):
+                flash( "try different username")
+                return render_template('sign_up.html',form=form)
+            if(ifEmailOccupied(email)):
+                flash("this email already exists")
+                return render_template('sign_up.html',form=form)
+            cur = mysql.connection.cursor()
+            cur.execute("insert into user value(%s,%s,%s,%s,%s,%s,%s)",(name, user_id,email, phone, password, '', ''))
+            mysql.connection.commit()
+            cur.close()
+            return redirect('/home')
+        return render_template('sign_up.html',form=form)
+    return render_template('sign_up.html',form=form)
 
 
 @app.route('/sign_in', methods=['POST', 'GET'])
