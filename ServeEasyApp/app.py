@@ -23,11 +23,11 @@ app = Flask(__name__)
 local_dir = os.getcwd()
 print(local_dir)
 
-#db = yaml.load(open('db.yaml'))
-app.config['MYSQL_HOST'] = "localhost"
-app.config['MYSQL_USER'] = "Harshit"
-app.config['MYSQL_PASSWORD'] = "Harshit"
-app.config['MYSQL_DB'] = "ServeEasy"
+db = yaml.load(open('db.yaml'))
+app.config['MYSQL_HOST'] = db['mysql_host']
+app.config['MYSQL_USER'] = db['mysql_user']
+app.config['MYSQL_PASSWORD'] = db['mysql_password']
+app.config['MYSQL_DB'] = db['mysql_db']
 mysql = MySQL(app)
 
 
@@ -119,12 +119,11 @@ def sign_up():
     form = SignupForm()
     if(request.method == 'POST'):
         if form.validate_on_submit():
-            user_details = request.form
-            name = user_details['name']
-            user_id = user_details['username']
-            email = user_details['email']
-            password = user_details['password']
-            phone = user_details['phone']
+            name = form.name.data
+            user_id = form.username.data
+            email = form.email.data
+            password = form.password.data
+            phone = form.phone.data
             if(ifUsernameNotAvailable(user_id)):
                 flash( "try different username")
                 return render_template('sign_up.html',form=form)
